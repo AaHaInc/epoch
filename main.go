@@ -1,4 +1,4 @@
-package epoch
+package main
 
 import (
 	"errors"
@@ -7,7 +7,8 @@ import (
 )
 
 type Interval struct {
-	Second, Minute, Hour, Day, Week, Month, Year float64
+	Value float64
+	Unit  string
 }
 
 func ParseInterval(interval string) (*Interval, error) {
@@ -26,29 +27,29 @@ func ParseInterval(interval string) (*Interval, error) {
 	}
 
 	switch strings.ToLower(unit) {
-	case "s", "sec", "second":
-		i.Second = value
-	case "m", "min", "minute":
-		i.Minute = value / 60
-	case "h", "hour":
-		i.Hour = value / 3600
-	case "d", "day":
-		i.Day = value / 86400
-	case "w", "week":
-		i.Week = value / 604800
-	case "month":
-		i.Month = value / 2592000
-	case "y", "year":
-		i.Year = value / 31536000
+	case "s":
+		i.Unit = "second"
+	case "m":
+		i.Unit = "minute"
+	case "h":
+		i.Unit = "hour"
+	case "d":
+		i.Unit = "day"
+	case "w":
+		i.Unit = "week"
+	case "mo":
+		i.Unit = "month"
+	case "y":
+		i.Unit = "year"
 	default:
 		return nil, fmt.Errorf("invalid interval unit: %s", unit)
 	}
-
+	i.Value = value
 	return &i, nil
 }
 
 func main() {
-	interval, err := ParseInterval("5m")
+	interval, err := ParseInterval("5mo")
 	if err != nil {
 		fmt.Println(err)
 		return
