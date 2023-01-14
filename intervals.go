@@ -43,22 +43,18 @@ func (i Interval) String() string {
 }
 
 func (i Interval) Duration() time.Duration {
-	var d time.Duration
 	switch i.Unit {
 	case UnitSecond:
-		d = time.Duration(i.Value * float64(time.Second))
+		return time.Duration(i.Value) * time.Second
 	case UnitMinute:
-		d = time.Duration(i.Value * float64(time.Minute))
+		return time.Duration(i.Value) * time.Minute
 	case UnitHour:
-		d = time.Duration(i.Value * float64(time.Hour))
+		return time.Duration(i.Value) * time.Hour
 	case UnitDay:
-		d = time.Duration(i.Value * 24 * float64(time.Hour))
+		return time.Duration(i.Value) * 24 * time.Hour
 	case UnitWeek:
-		d = time.Duration(i.Value * 7 * 24 * float64(time.Hour))
-	case UnitMonth:
-		d = time.Duration(i.Value * 30 * 24 * float64(time.Hour))
-	case UnitYear:
-		d = time.Duration(i.Value * 365 * 24 * float64(time.Hour))
+		return time.Duration(i.Value) * 7 * 24 * time.Hour
+	default:
+		panic(fmt.Sprintf("unexpected unit %v", i.Unit))
 	}
-	return d
 }
