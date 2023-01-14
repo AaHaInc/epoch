@@ -67,6 +67,12 @@ type AliasesParser struct {
 	clock      Clock
 }
 
+var _ Parser = &AliasesParser{}
+
+var (
+	ParserNameAliases = "aliases"
+)
+
 func (a *AliasesParser) Match(s string) bool {
 	for _, alias := range a.dictionary {
 		if s == alias.Slug {
@@ -76,7 +82,7 @@ func (a *AliasesParser) Match(s string) bool {
 	return false
 }
 
-func (a *AliasesParser) Parse(s string, locArg ...*time.Location) (time.Time, error) {
+func (a *AliasesParser) Parse(s string, locArg ...*time.Location) (time.Time, *ParseDetails, error) {
 	var loc *time.Location
 	if len(locArg) > 0 {
 		loc = locArg[0]
@@ -91,10 +97,14 @@ func (a *AliasesParser) Parse(s string, locArg ...*time.Location) (time.Time, er
 		if loc != nil {
 			now = now.In(loc)
 		}
-		return alias.Callback(now), nil
+		return alias.Callback(now), &ParseDetails{
+			IsRelative: true,
+			IsAliased:  true,
+			ParserName: ParserNameAliases,
+		}, nil
 	}
 
-	return time.Time{}, fmt.Errorf("alias not found")
+	return time.Time{}, nil, fmt.Errorf("alias not found")
 }
 
 func (a *AliasesParser) GetDictionary() []Alias {
@@ -117,4 +127,7 @@ func NewAliasesParser() *AliasesParser {
 	}
 }
 
-var _ Parser = &AliasesParser{}
+// Name returns the name of the parser, "aliases"
+func (u *AliasesParser) Name() string {
+	return ParserNameAliases
+}

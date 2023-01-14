@@ -53,7 +53,7 @@ func (tp *TimeParser) parseTime(s string, locArg ...*time.Location) (time.Time, 
 		if !parser.Match(s) {
 			continue
 		}
-		t, err := parser.Parse(s, locArg...)
+		t, _, err := parser.Parse(s, locArg...)
 		if err != nil {
 			return time.Time{}, fmt.Errorf("failed to parse time: %w", err)
 		}
