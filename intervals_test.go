@@ -5,6 +5,7 @@ import (
 	"github.com/aahainc/epoch"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"time"
 )
 
 var _ = Describe("Intervals", func() {
@@ -50,5 +51,111 @@ var _ = Describe("Intervals", func() {
 			// todo: it's actually ignores `.3`, should fail on InvalidFormat
 			//Entry("invalid value", "5.5.3m", epoch.ErrInvalidFormat),
 		)
+
+	})
+
+	Context("MustParseInterval", func() {
+		It("parses a valid interval without error", func() {
+			interval := epoch.MustParseInterval("5s")
+			Expect(interval.Value).To(Equal(5.0))
+			Expect(interval.Unit).To(Equal(epoch.UnitSecond))
+		})
+		It("panics on an invalid interval", func() {
+			Expect(func() { epoch.MustParseInterval("invalid") }).To(Panic())
+		})
+	})
+
+	Context("interval.Duration()", func() {
+		DescribeTable("valid input is given", func(input epoch.Interval, expectedDuration time.Duration) {
+			duration := input.Duration()
+			Expect(duration).To(Equal(expectedDuration), input.String())
+		},
+			Entry("5 seconds", epoch.Interval{5, epoch.UnitSecond}, 5*time.Second),
+			Entry("5 minutes", epoch.Interval{5, epoch.UnitMinute}, 5*time.Minute),
+			Entry("5 hours", epoch.Interval{5, epoch.UnitHour}, 5*time.Hour),
+			Entry("5 days", epoch.Interval{5, epoch.UnitDay}, 5*24*time.Hour),
+			Entry("5 weeks", epoch.Interval{5, epoch.UnitWeek}, 5*7*24*time.Hour),
+			Entry("5.5 seconds", epoch.Interval{5.5, epoch.UnitSecond}, 5500*time.Millisecond),
+			Entry("0 second", epoch.Interval{0, epoch.UnitSecond}, 0*time.Second),
+			Entry("-5 seconds", epoch.Interval{-5, epoch.UnitSecond}, -5*time.Second),
+		)
+
+		DescribeTable("invalid input is given", func(input epoch.Interval) {
+			Expect(func() { input.Duration() }).To(Panic())
+		},
+			Entry("5 months", epoch.Interval{5, epoch.UnitMonth}),
+			Entry("5 years", epoch.Interval{5, epoch.UnitYear}),
+			Entry("-5 months", epoch.Interval{-5, epoch.UnitMonth}),
+			Entry("-5 years", epoch.Interval{-5, epoch.UnitYear}),
+		)
+	})
+
+	Context("IsSafeDuration()", func() {
+		It("returns true for safe durations", func() {
+			intervals := []epoch.Interval{
+				{5, epoch.UnitSecond},
+				{5, epoch.UnitMinute},
+				{5, epoch.UnitHour},
+				{5, epoch.UnitDay},
+				{5, epoch.UnitWeek},
+			}
+
+			for _, interval := range intervals {
+				Expect(interval.IsSafeDuration()).To(BeTrue())
+			}
+		})
+
+		It("returns false for unsafe durations", func() {
+			intervals := []epoch.Interval{
+				{5, epoch.UnitMonth},
+				{5, epoch.UnitYear},
+			}
+
+			for _, interval := range intervals {
+				Expect(interval.IsSafeDuration()).To(BeFalse())
+			}
+		})
+	})
+
+	Context("ExtractDateParts", func() {
+		It("should extract date parts for day unit", func() {
+			i := epoch.Interval{Value: 2, Unit: epoch.UnitDay}
+			y, m, d := i.ExtractDateParts()
+			Expect(y).To(Equal(0))
+			Expect(m).To(Equal(0))
+			Expect(d).To(Equal(2))
+		})
+
+		It("should extract date parts for week unit", func() {
+			i := epoch.Interval{Value: 2, Unit: epoch.UnitWeek}
+			y, m, d := i.ExtractDateParts()
+			Expect(y).To(Equal(0))
+			Expect(m).To(Equal(0))
+			Expect(d).To(Equal(14))
+		})
+
+		It("should extract date parts for month unit", func() {
+			i := epoch.Interval{Value: 2, Unit: epoch.UnitMonth}
+			y, m, d := i.ExtractDateParts()
+			Expect(y).To(Equal(0))
+			Expect(m).To(Equal(2))
+			Expect(d).To(Equal(0))
+		})
+
+		It("should extract date parts for year unit", func() {
+			i := epoch.Interval{Value: 2, Unit: epoch.UnitYear}
+			y, m, d := i.ExtractDateParts()
+			Expect(y).To(Equal(2))
+			Expect(m).To(Equal(0))
+			Expect(d).To(Equal(0))
+		})
+
+		It("should extract date parts for non-date unit", func() {
+			i := epoch.Interval{Value: 2, Unit: epoch.UnitSecond}
+			y, m, d := i.ExtractDateParts()
+			Expect(y).To(Equal(0))
+			Expect(m).To(Equal(0))
+			Expect(d).To(Equal(0))
+		})
 	})
 })

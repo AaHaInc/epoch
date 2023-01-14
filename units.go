@@ -25,7 +25,3 @@ func (units Units) Get(s string) *Unit {
 	}
 	return nil
 }
-
-func ListAvailableUnits() Units {
-	return AvailableUnits
-}
