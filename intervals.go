@@ -58,3 +58,12 @@ func (i Interval) Duration() time.Duration {
 		panic(fmt.Sprintf("unexpected unit %v", i.Unit))
 	}
 }
+
+func (i Interval) IsSafeDuration() bool {
+	switch i.Unit {
+	case UnitSecond, UnitMinute, UnitHour, UnitDay, UnitWeek:
+		return true
+	default:
+		return false
+	}
+}
