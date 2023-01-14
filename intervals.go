@@ -3,8 +3,12 @@ package epoch
 import (
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
+)
+
+var (
+	ErrInvalidUnit   = fmt.Errorf("invalid unit")
+	ErrInvalidFormat = fmt.Errorf("invalid format")
 )
 
 type Interval struct {
@@ -13,21 +17,19 @@ type Interval struct {
 }
 
 func ParseInterval(interval string) (*Interval, error) {
-	interval = strings.TrimSpace(interval)
-	if len(interval) < 2 {
-		return nil, fmt.Errorf("interval string is too short")
-	}
 	var value float64
-	var unitStr string
-	n, err := fmt.Sscanf(interval, "%f%s", &value, &unitStr)
+	var unitShort string
+	n, err := fmt.Sscanf(interval, "%f%s", &value, &unitShort)
 	if n != 2 || err != nil {
-		return nil, fmt.Errorf("failed to parse interval string: %s", err)
+		return nil, fmt.Errorf("%w: %s", ErrInvalidFormat, err)
 	}
-	unit := ListAvailableUnits().Get(unitStr)
+
+	unit := AvailableUnits.Get(unitShort)
 	if unit == nil {
-		return nil, fmt.Errorf("unknown unit %q", unitStr)
+		return nil, ErrInvalidUnit
 	}
-	return &Interval{Unit: *unit, Value: value}, nil
+
+	return &Interval{Value: value, Unit: *unit}, nil
 }
 
 func MustParseInterval(interval string) *Interval {

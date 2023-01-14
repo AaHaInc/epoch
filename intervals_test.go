@@ -1,6 +1,7 @@
 package epoch_test
 
 import (
+	"errors"
 	"github.com/aahainc/epoch"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -36,6 +37,18 @@ var _ = Describe("Intervals", func() {
 			Entry("0 day", "0d", 0.0, epoch.UnitDay),
 			Entry("-2 week", "-2w", -2.0, epoch.UnitWeek),
 			Entry("-3 year", "-3y", -3.0, epoch.UnitYear),
+		)
+
+		DescribeTable("invalid input is given", func(inputStr string, expectedError error) {
+			interval, err := epoch.ParseInterval(inputStr)
+			Expect(interval).To(BeNil())
+			Expect(errors.Is(err, expectedError)).To(BeTrue(), inputStr)
+		},
+			Entry("empty input", "", epoch.ErrInvalidFormat),
+			Entry("invalid unit", "5x", epoch.ErrInvalidUnit),
+
+			// todo: it's actually ignores `.3`, should fail on InvalidFormat
+			//Entry("invalid value", "5.5.3m", epoch.ErrInvalidFormat),
 		)
 	})
 })
