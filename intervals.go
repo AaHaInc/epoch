@@ -59,6 +59,8 @@ func (i Interval) Duration() time.Duration {
 	}
 }
 
+// IsSafeDuration returns true if the duration can be safely calculated, and false otherwise.
+// Only seconds, minutes, hours, days, and weeks are accurate, other units may return false
 func (i Interval) IsSafeDuration() bool {
 	switch i.Unit {
 	case UnitSecond, UnitMinute, UnitHour, UnitDay, UnitWeek:
