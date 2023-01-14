@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Interval struct {
@@ -39,4 +40,25 @@ func MustParseInterval(interval string) *Interval {
 
 func (i Interval) String() string {
 	return strconv.FormatFloat(i.Value, 'f', -1, 64) + i.Unit.Short
+}
+
+func (i Interval) Duration() time.Duration {
+	var d time.Duration
+	switch i.Unit {
+	case UnitSecond:
+		d = time.Duration(i.Value * float64(time.Second))
+	case UnitMinute:
+		d = time.Duration(i.Value * float64(time.Minute))
+	case UnitHour:
+		d = time.Duration(i.Value * float64(time.Hour))
+	case UnitDay:
+		d = time.Duration(i.Value * 24 * float64(time.Hour))
+	case UnitWeek:
+		d = time.Duration(i.Value * 7 * 24 * float64(time.Hour))
+	case UnitMonth:
+		d = time.Duration(i.Value * 30 * 24 * float64(time.Hour))
+	case UnitYear:
+		d = time.Duration(i.Value * 365 * 24 * float64(time.Hour))
+	}
+	return d
 }
