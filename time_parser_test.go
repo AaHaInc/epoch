@@ -26,41 +26,46 @@ var _ = Describe("TimeParser", func() {
 		})
 
 		When("mocked time.Now() to a fixed date", func() {
+			fixedNow := time.Date(2006, time.January, 02, 15, 4, 5, 0, time.UTC)
+			var options []epoch.TimeParserOption
 			var p *epoch.TimeParser
 
-			fixedNow := time.Date(2006, time.January, 02, 15, 4, 5, 0, time.UTC)
-			parsersWithFixedNow := []epoch.Parser{
-				epoch.NewRFC3339Parser(),
-				epoch.NewUnixSecondsParser(),
-				epoch.NewAliasesParser().SetClock(epoch.NewStaticClock(fixedNow)),
-			}
-
 			BeforeEach(func() {
-				p = epoch.NewTimeParser(parsersWithFixedNow...)
+				options = []epoch.TimeParserOption{
+					epoch.WithParsers(
+						epoch.NewRFC3339Parser(),
+						epoch.NewUnixSecondsParser(),
+						epoch.NewAliasesParser().SetClock(epoch.NewStaticClock(fixedNow)),
+					),
+				}
+				p = epoch.NewTimeParser(options...)
 			})
 
-			DescribeTable("relative dates", func(input string, tExpected time.Time) {
-				t, err := p.Parse(input, time.UTC)
-				Expect(err).Should(Succeed())
-				Expect(t.UnixMilli()).To(Equal(tExpected.UnixMilli()))
-			},
-				Entry("today", "today", time.Date(2006, time.January, 2, 0, 0, 0, 0, time.UTC)),
-				Entry("yesterday", "yesterday", time.Date(2006, time.January, 1, 0, 0, 0, 0, time.UTC)),
-				Entry("tomorrow", "tomorrow", time.Date(2006, time.January, 3, 0, 0, 0, 0, time.UTC)),
-				//Entry("this week", "this-week", time.Date(2006, time.January, 2, 0, 0, 0, 0, time.UTC)),
-				//Entry("last week", "last-week", time.Date(2005, time.December, 26, 0, 0, 0, 0, time.UTC)),
-				//Entry("next week", "next-week", time.Date(2006, time.January, 9, 0, 0, 0, 0, time.UTC)),
-				//Entry("this month", "this-month", time.Date(2006, time.January, 1, 0, 0, 0, 0, time.UTC)),
-				//Entry("last month", "last-month", time.Date(2005, time.December, 1, 0, 0, 0, 0, time.UTC)),
-				//Entry("next month", "next-month", time.Date(2006, time.February, 1, 0, 0, 0, 0, time.UTC)),
-				//Entry("this year", "this-year", time.Date(2006, time.January, 1, 0, 0, 0, 0, time.UTC)),
-				//Entry("last year", "last-year", time.Date(2005, time.January, 1, 0, 0, 0, 0, time.UTC)),
-				//Entry("next year", "next-year", time.Date(2007, time.January, 1, 0, 0, 0, 0, time.UTC)),
-			)
+			When("no arithmetics", func() {
+				DescribeTable("relative dates", func(input string, tExpected time.Time) {
+					t, err := p.Parse(input, time.UTC)
+					Expect(err).Should(Succeed())
+					Expect(t.UnixMilli()).To(Equal(tExpected.UnixMilli()))
+				},
+					Entry("today", "today", time.Date(2006, time.January, 2, 0, 0, 0, 0, time.UTC)),
+					Entry("yesterday", "yesterday", time.Date(2006, time.January, 1, 0, 0, 0, 0, time.UTC)),
+					Entry("tomorrow", "tomorrow", time.Date(2006, time.January, 3, 0, 0, 0, 0, time.UTC)),
+					//Entry("this week", "this-week", time.Date(2006, time.January, 2, 0, 0, 0, 0, time.UTC)),
+					//Entry("last week", "last-week", time.Date(2005, time.December, 26, 0, 0, 0, 0, time.UTC)),
+					//Entry("next week", "next-week", time.Date(2006, time.January, 9, 0, 0, 0, 0, time.UTC)),
+					//Entry("this month", "this-month", time.Date(2006, time.January, 1, 0, 0, 0, 0, time.UTC)),
+					//Entry("last month", "last-month", time.Date(2005, time.December, 1, 0, 0, 0, 0, time.UTC)),
+					//Entry("next month", "next-month", time.Date(2006, time.February, 1, 0, 0, 0, 0, time.UTC)),
+					//Entry("this year", "this-year", time.Date(2006, time.January, 1, 0, 0, 0, 0, time.UTC)),
+					//Entry("last year", "last-year", time.Date(2005, time.January, 1, 0, 0, 0, 0, time.UTC)),
+					//Entry("next year", "next-year", time.Date(2007, time.January, 1, 0, 0, 0, 0, time.UTC)),
+				)
+			})
 
 			When("and with arithmetics", func() {
 				BeforeEach(func() {
-					p.IntervalArithmeticsEnabled = true
+					options = append(options, epoch.WithIntervalArithmetics())
+					p = epoch.NewTimeParser(options...)
 				})
 
 				DescribeTable("relative dates", func(input string, tExpected time.Time) {
@@ -72,6 +77,5 @@ var _ = Describe("TimeParser", func() {
 				)
 			})
 		})
-
 	})
 })
