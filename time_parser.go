@@ -20,6 +20,13 @@ func WithIntervalArithmetics() TimeParserOption {
 	}
 }
 
+// WithBaseTimeFormat sets time format that is used by BaseParser
+func WithBaseTimeFormat(v string) TimeParserOption {
+	return func(tp *TimeParser) {
+		BaseParserFormat = v
+	}
+}
+
 // WithDefaultParsers sets the default list of parsers for TimeParser
 func WithDefaultParsers() TimeParserOption {
 	return func(tp *TimeParser) {

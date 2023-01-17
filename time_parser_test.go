@@ -9,7 +9,10 @@ import (
 
 var _ = Describe("TimeParser", func() {
 	Context("With default parsers", func() {
-		p := epoch.NewTimeParser()
+		var p *epoch.TimeParser
+		BeforeEach(func() {
+			p = epoch.NewTimeParser()
+		})
 
 		When("valid inputs were given (no timezone is given)", func() {
 			DescribeTable("absolute dates", func(input string, tExpected time.Time) {
@@ -25,15 +28,47 @@ var _ = Describe("TimeParser", func() {
 			)
 		})
 
+		When("with custom base formatting", func() {
+			It("parses time in custom format (with timezone inside format)", func() {
+				p = epoch.NewTimeParser(epoch.WithBaseTimeFormat(time.RFC822))
+
+				loc, _ := time.LoadLocation("MST")
+				expectedTime := time.Date(2020, time.January, 2, 16, 30, 0, 0, loc)
+				t, err := p.Parse("02 Jan 20 16:30 MST")
+				Expect(err).Should(Succeed())
+				Expect(t).To(Equal(expectedTime))
+			})
+
+			It("parses time in custom format (without timezone inside format): fallback to UTC", func() {
+				p = epoch.NewTimeParser(epoch.WithBaseTimeFormat("02 Jan 06 15:04"))
+
+				expectedTime := time.Date(2020, time.January, 2, 16, 30, 0, 0, time.UTC)
+
+				t, err := p.Parse("02 Jan 20 16:30")
+				Expect(err).Should(Succeed())
+				Expect(t).To(Equal(expectedTime))
+			})
+
+			It("parses time in custom format (without timezone inside format): providing a loc", func() {
+				p = epoch.NewTimeParser(epoch.WithBaseTimeFormat("02 Jan 06 15:04"))
+
+				loc, _ := time.LoadLocation("MST")
+				expectedTime := time.Date(2020, time.January, 2, 16, 30, 0, 0, loc)
+
+				t, err := p.Parse("02 Jan 20 16:30", loc)
+				Expect(err).Should(Succeed())
+				Expect(t).To(Equal(expectedTime))
+			})
+		})
+
 		When("mocked time.Now() to a fixed date", func() {
 			fixedNow := time.Date(2006, time.January, 02, 15, 4, 5, 0, time.UTC)
 			var options []epoch.TimeParserOption
-			var p *epoch.TimeParser
 
 			BeforeEach(func() {
 				options = []epoch.TimeParserOption{
 					epoch.WithParsers(
-						epoch.NewRFC3339Parser(),
+						epoch.NewBaseParser(),
 						epoch.NewUnixSecondsParser(),
 						epoch.NewAliasesParser().SetClock(epoch.NewStaticClock(fixedNow)),
 					),

@@ -40,7 +40,7 @@ type Arithmetics struct {
 // GetDefaultParsers returns a list of default parsers including RFC3339, Unix Seconds and Aliases Parsers
 func GetDefaultParsers() []Parser {
 	return []Parser{
-		NewRFC3339Parser(),
+		NewBaseParser(),
 		NewUnixSecondsParser(),
 		NewAliasesParser(),
 	}
@@ -49,7 +49,7 @@ func GetDefaultParsers() []Parser {
 // GetAllParsers returns a list of all the parsers we support
 func GetAllParsers() []Parser {
 	return []Parser{
-		NewRFC3339Parser(),
+		NewBaseParser(),
 		NewUnixMilliParser(),
 		NewUnixSecondsParser(),
 		NewAliasesParser(),
