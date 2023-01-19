@@ -44,6 +44,11 @@ func (i *Interval) String() string {
 	return strconv.FormatFloat(i.Value, 'f', -1, 64) + i.Unit.Short
 }
 
+// IsNil returns true if interval is nil
+func (i *Interval) IsNil() bool {
+	return i.Unit.IsNil()
+}
+
 // IsSafeDuration returns true if the interval can be converted to a precise time.Duration
 // This method should be used to determine if the `Duration()` method can be safely called
 // on this Interval.

@@ -17,6 +17,10 @@ var UnitYear = Unit{"y", "year"}
 
 var AvailableUnits = Units{UnitSecond, UnitMinute, UnitHour, UnitDay, UnitWeek, UnitMonth, UnitYear}
 
+func (unit Unit) IsNil() bool {
+	return unit.Short == ""
+}
+
 func (units Units) Get(s string) *Unit {
 	for _, u := range units {
 		if u.Short == s {
