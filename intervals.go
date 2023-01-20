@@ -46,6 +46,10 @@ func (i *Interval) String() string {
 
 // IsNil returns true if interval is nil
 func (i *Interval) IsNil() bool {
+	if i == nil {
+		return true
+	}
+
 	return i.Unit.IsNil()
 }
 
