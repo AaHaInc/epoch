@@ -29,3 +29,23 @@ func (units Units) Get(s string) *Unit {
 	}
 	return nil
 }
+
+func (units Units) Factory() *UnitFactory {
+	return &UnitFactory{units}
+}
+
+// UnitFactory
+// todo: refactor it, so we don't duplicate having hardcoded short units like `s`, `m`, etc
+//
+//	use reflectish for such kind of factories
+type UnitFactory struct {
+	units Units
+}
+
+func (f *UnitFactory) Second() *Unit { return f.units.Get("s") }
+func (f *UnitFactory) Minute() *Unit { return f.units.Get("m") }
+func (f *UnitFactory) Hour() *Unit   { return f.units.Get("h") }
+func (f *UnitFactory) Day() *Unit    { return f.units.Get("d") }
+func (f *UnitFactory) Week() *Unit   { return f.units.Get("w") }
+func (f *UnitFactory) Month() *Unit  { return f.units.Get("mo") }
+func (f *UnitFactory) Year() *Unit   { return f.units.Get("y") }
