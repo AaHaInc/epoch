@@ -25,11 +25,11 @@ func ParseInterval(interval string) (*Interval, error) {
 	}
 
 	unit := AvailableUnits.Get(unitShort)
-	if unit == nil {
+	if unit.IsNil() {
 		return nil, ErrInvalidUnit
 	}
 
-	return &Interval{Value: value, Unit: *unit}, nil
+	return &Interval{Value: value, Unit: unit}, nil
 }
 
 func MustParseInterval(interval string) *Interval {
